@@ -2,8 +2,10 @@ import React, {useState} from 'react';
 import {LockClosedIcon} from '@heroicons/react/20/solid'
 import {Link} from "react-router-dom";
 import axiosClient from "../axios.js";
+import { useStateContext } from '../context/ContextProvider.jsx';
 
 const Signup = () => {
+  const {setCurrentUser, setUserToken} =  useStateContext();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,10 +22,11 @@ const Signup = () => {
       password: password,
       password_confirmation: passwordConfirmation
     }).then(({data}) => {
-      console.log(data);
+      setCurrentUser(data.user);
+      setUserToken(data.token);
     }).catch((error) => {
-      if (error.response){
-        const finalErrors = Object.values(error.response.data.errors).reduce((acc,next)=> [...acc,...next], []);
+      if (error.response) {
+        const finalErrors = Object.values(error.response.data.errors).reduce((acc, next) => [...acc, ...next], []);
         console.log(finalErrors)
         setError({__html: finalErrors.join('<br/>')})
       }
@@ -62,7 +65,7 @@ const Signup = () => {
               className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Full Name"
               value={fullName}
-              onChange={(e)=>setFullName(e.target.value)}
+              onChange={(e) => setFullName(e.target.value)}
             />
           </div>
           <div>
@@ -77,6 +80,8 @@ const Signup = () => {
               required
               className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
@@ -91,6 +96,8 @@ const Signup = () => {
               required
               className="relative block w-full appearance-none rounded-none border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -105,6 +112,8 @@ const Signup = () => {
               required
               className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Password Confirmation"
+              value={passwordConfirmation}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
             />
           </div>
         </div>

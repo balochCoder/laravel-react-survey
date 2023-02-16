@@ -1,8 +1,36 @@
-import React from 'react';
-import { LockClosedIcon } from '@heroicons/react/20/solid'
+import React, {useState} from 'react';
+import {LockClosedIcon} from '@heroicons/react/20/solid'
 import {Link} from "react-router-dom";
+import axiosClient from "../axios.js";
+import {useStateContext} from "../context/ContextProvider.jsx";
 
 const Login = () => {
+  const {setCurrentUser, setUserToken} =  useStateContext();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState({__html: ''});
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    setError({__html: ''});
+
+    axiosClient.post('/login', {
+      email: email,
+      password: password,
+    }).then(({data}) => {
+      setCurrentUser(data.user);
+      setUserToken(data.token);
+    }).catch((error) => {
+      if (error.response) {
+        const finalErrors = Object.values(error.response.data.errors).reduce((acc, next) => [...acc, ...next], []);
+        console.log(finalErrors)
+        setError({__html: finalErrors.join('<br/>')})
+      }
+      console.error(error)
+    });
+  }
+
   return (
     <>
       <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
@@ -14,7 +42,13 @@ const Login = () => {
           Create a new account
         </Link>
       </p>
-      <form className="mt-8 space-y-6" action="#" method="POST">
+
+      {
+        error.__html && (
+          <div className='bg-red-500 rounded py-2 px-3 text-white' dangerouslySetInnerHTML={error}></div>
+        )
+      }
+      <form className="mt-8 space-y-6" action="#" method="POST" onSubmit={onSubmit}>
         <input type="hidden" name="remember" defaultValue="true"/>
         <div className="-space-y-px rounded-md shadow-sm">
           <div>
@@ -29,6 +63,8 @@ const Login = () => {
               required
               className="relative block w-full appearance-none rounded-none rounded-t-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
@@ -43,6 +79,8 @@ const Login = () => {
               required
               className="relative block w-full appearance-none rounded-none rounded-b-md border border-gray-300 px-3 py-2 text-gray-900 placeholder-gray-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
         </div>
@@ -78,7 +116,8 @@ const Login = () => {
             Sign in
           </button>
         </div>
-      </form>    </>
+      </form>
+    </>
   );
 };
 
